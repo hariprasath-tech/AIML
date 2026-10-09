@@ -1,0 +1,9 @@
+# YOLOv8 Dataset Configuration for SKU-110K Dense Retail Shelf Detection
+path: ../data/datasets/sku110k
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: shelf_item
+  1: empty_bay

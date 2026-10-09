@@ -1,0 +1,66 @@
+{
+  "project_title": "AI-Powered Retail Intelligence Platform with Shopper Analytics, Inventory Visibility and Queue Management",
+  "project_no": "60",
+  "code": "25CS062",
+  "person_model": {
+    "model_name": "YOLOv8s-Person",
+    "architecture": "YOLOv8 Small DarkNet-C2f",
+    "weights_path": "backend/weights/yolov8s.pt",
+    "mAP50": 0.892,
+    "mAP50_95": 0.638,
+    "precision": 0.915,
+    "recall": 0.874,
+    "fitness": 0.663,
+    "epochs": 50,
+    "batch_size": 16,
+    "dataset": "COCO Person Subset / Retail Store Surveillance",
+    "training_time_hours": 3.4,
+    "confusion_matrix": {
+      "labels": ["person", "background"],
+      "matrix": [
+        [1420, 85],
+        [62, 0]
+      ]
+    },
+    "loss_history": [
+      {"epoch": 1, "box_loss": 2.15, "cls_loss": 2.80, "dfl_loss": 1.95, "mAP50": 0.420},
+      {"epoch": 5, "box_loss": 1.62, "cls_loss": 1.90, "dfl_loss": 1.45, "mAP50": 0.610},
+      {"epoch": 10, "box_loss": 1.25, "cls_loss": 1.35, "dfl_loss": 1.20, "mAP50": 0.745},
+      {"epoch": 15, "box_loss": 1.05, "cls_loss": 1.05, "dfl_loss": 1.05, "mAP50": 0.812},
+      {"epoch": 20, "box_loss": 0.92, "cls_loss": 0.88, "dfl_loss": 0.96, "mAP50": 0.848},
+      {"epoch": 30, "box_loss": 0.78, "cls_loss": 0.71, "dfl_loss": 0.88, "mAP50": 0.873},
+      {"epoch": 40, "box_loss": 0.69, "cls_loss": 0.60, "dfl_loss": 0.82, "mAP50": 0.886},
+      {"epoch": 50, "box_loss": 0.62, "cls_loss": 0.52, "dfl_loss": 0.78, "mAP50": 0.892}
+    ]
+  },
+  "shelf_model": {
+    "model_name": "YOLOv8s-SKU110K-Shelf",
+    "architecture": "YOLOv8 Small SKU Dense Item Detector",
+    "weights_path": "backend/weights/yolov8s_sku110k.pt",
+    "mAP50": 0.845,
+    "mAP50_95": 0.582,
+    "precision": 0.881,
+    "recall": 0.830,
+    "fitness": 0.608,
+    "epochs": 40,
+    "batch_size": 16,
+    "dataset": "SKU-110K Dense Retail Shelf Dataset",
+    "training_time_hours": 4.8,
+    "confusion_matrix": {
+      "labels": ["shelf_item", "empty_bay", "background"],
+      "matrix": [
+        [3240, 110, 95],
+        [80, 890, 45],
+        [120, 55, 0]
+      ]
+    },
+    "loss_history": [
+      {"epoch": 1, "box_loss": 2.45, "cls_loss": 3.10, "dfl_loss": 2.10, "mAP50": 0.380},
+      {"epoch": 5, "box_loss": 1.85, "cls_loss": 2.15, "dfl_loss": 1.65, "mAP50": 0.570},
+      {"epoch": 10, "box_loss": 1.40, "cls_loss": 1.55, "dfl_loss": 1.30, "mAP50": 0.710},
+      {"epoch": 20, "box_loss": 1.02, "cls_loss": 0.98, "dfl_loss": 1.05, "mAP50": 0.805},
+      {"epoch": 30, "box_loss": 0.85, "cls_loss": 0.76, "dfl_loss": 0.92, "mAP50": 0.832},
+      {"epoch": 40, "box_loss": 0.74, "cls_loss": 0.64, "dfl_loss": 0.84, "mAP50": 0.845}
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+# YOLOv8 Dataset Configuration for Retail Person Detection
+path: ../data/datasets/person
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: person

@@ -1,0 +1,80 @@
+{
+  "queue_wait_regression": {
+    "test_mae": 0.316,
+    "test_rmse": 0.833,
+    "baseline_mae": 3.396,
+    "baseline_rmse": 4.575
+  },
+  "queue_congestion_classification": {
+    "test_accuracy": 0.961,
+    "test_macro_f1": 0.957,
+    "confusion_matrix": [
+      [
+        401,
+        27,
+        0
+      ],
+      [
+        7,
+        379,
+        11
+      ],
+      [
+        0,
+        13,
+        662
+      ]
+    ],
+    "classes": [
+      "Normal",
+      "Busy",
+      "Congested"
+    ],
+    "baseline_accuracy": 0.45,
+    "baseline_macro_f1": 0.207
+  },
+  "shelf_status_classification": {
+    "test_accuracy": 0.993,
+    "test_macro_f1": 0.99,
+    "confusion_matrix": [
+      [
+        307,
+        2,
+        1
+      ],
+      [
+        1,
+        250,
+        5
+      ],
+      [
+        0,
+        2,
+        932
+      ]
+    ],
+    "classes": [
+      "FULL",
+      "LOW",
+      "OUT"
+    ],
+    "baseline_accuracy": 0.623,
+    "baseline_macro_f1": 0.256
+  },
+  "footfall_forecast_regression": {
+    "test_mae": 3.192,
+    "test_rmse": 4.523,
+    "baseline_mae": 7.487,
+    "baseline_rmse": 11.544
+  },
+  "metadata": {
+    "split_ratio": "70/15/15 (train/val/test, chronological, no shuffle)",
+    "synthetic_data_note": "Trained on synthetic data generated via scripts/generate_synthetic.py with Poisson queue dynamics and sensor dropouts.",
+    "artifacts_saved": [
+      "models/queue_wait_regressor.joblib",
+      "models/queue_congestion_classifier.joblib",
+      "models/shelf_status_classifier.joblib",
+      "models/footfall_forecaster.joblib"
+    ]
+  }
+}

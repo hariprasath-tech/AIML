@@ -1,129 +1,139 @@
 import React from 'react';
-import { Clock, Users, AlertTriangle, CheckCircle, Zap, UserPlus, TrendingUp } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import confetti from 'canvas-confetti';
+import { Clock, Zap, Users, AlertCircle, TrendingUp } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { useLiveData } from '../context/useLiveData';
+import KpiCard from './KpiCard';
 
-export default function QueueMonitor({ queueData, forecastData, onOpenNewCounter }) {
-  const triggerConfetti = (queueName) => {
-    confetti({
-      particleCount: 80,
-      spread: 60,
-      origin: { y: 0.7 }
-    });
-    onOpenNewCounter(queueName);
-  };
+export const QueueMonitor = () => {
+  const { counters, waitTimeTrendData, kpiMetrics } = useLiveData();
+
+  const congestedCounters = counters.filter((c) => c.status === 'CONGESTED');
+  const closedCounters = counters.filter((c) => c.status === 'CLOSED');
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Queue Cards Grid */}
-      <div className="grid-3">
-        {queueData.map((q) => {
-          const isCongested = q.count >= q.threshold;
-
-          return (
-            <div
-              key={q.id}
-              className={`glass-card ${isCongested ? 'rose' : ''}`}
-              style={{
-                borderColor: isCongested ? 'rgba(244, 63, 94, 0.4)' : 'var(--border-color)',
-                boxShadow: isCongested ? 'var(--shadow-glow-rose)' : 'none'
-              }}
-            >
-              <div className="card-title">
-                <div className="card-title-left">
-                  <Users size={18} className="card-title-icon" style={{ color: isCongested ? 'var(--accent-rose)' : 'var(--accent-cyan)' }} />
-                  <span>{q.name}</span>
-                </div>
-                <span
-                  style={{
-                    fontSize: '0.72rem',
-                    fontFamily: 'var(--font-mono)',
-                    padding: '2px 8px',
-                    borderRadius: '6px',
-                    background: isCongested ? 'rgba(244, 63, 94, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                    color: isCongested ? 'var(--accent-rose)' : 'var(--accent-emerald)',
-                    border: `1px solid ${isCongested ? 'rgba(244, 63, 94, 0.4)' : 'rgba(16, 185, 129, 0.4)'}`
-                  }}
-                >
-                  {isCongested ? 'CONGESTED' : 'NORMAL'}
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', my: '8px' }}>
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>QUEUE LENGTH</div>
-                  <div style={{ fontSize: '2.2rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#FFF' }}>
-                    {q.count} <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>people</span>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>EST. WAIT TIME</div>
-                  <div style={{ fontSize: '1.6rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: isCongested ? 'var(--accent-rose)' : 'var(--accent-amber)' }}>
-                    {q.waitTime} <span style={{ fontSize: '0.8rem' }}>mins</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status bar */}
-              <div style={{ display: 'flex', gap: '4px', margin: '12px 0' }}>
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      flex: 1,
-                      height: '6px',
-                      borderRadius: '3px',
-                      background: i < q.count 
-                        ? (i >= q.threshold ? 'var(--accent-rose)' : 'var(--accent-cyan)')
-                        : 'rgba(255,255,255,0.08)'
-                    }}
-                  />
-                ))}
-              </div>
-
-              {isCongested && (
-                <button
-                  className="btn btn-primary"
-                  style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}
-                  onClick={() => triggerConfetti(q.name)}
-                >
-                  <UserPlus size={15} />
-                  Open Counter #4 (Dispatch Cashier)
-                </button>
-              )}
-            </div>
-          );
-        })}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Top Queue KPIs */}
+      <div className="kpi-grid">
+        <KpiCard
+          title="Avg Queue Wait Time"
+          value={kpiMetrics.avgQueueWaitMins}
+          unit="mins"
+          trend={kpiMetrics.queueWaitTrend}
+          icon={Clock}
+          theme="amber"
+          subtitle="Real-time queue timing"
+        />
+        <KpiCard
+          title="Congested Counters"
+          value={congestedCounters.length}
+          unit="counters"
+          trend={0}
+          icon={AlertCircle}
+          theme="rose"
+          subtitle="Exceeding 4 person threshold"
+        />
+        <KpiCard
+          title="Active Open Counters"
+          value={counters.length - closedCounters.length}
+          unit="counters"
+          trend={0}
+          icon={Users}
+          theme="emerald"
+          subtitle="Staffed & self-checkout"
+        />
       </div>
 
-      {/* AI Queue Forecast Line Chart */}
-      <div className="glass-card">
-        <div className="card-title">
-          <div className="card-title-left">
-            <TrendingUp size={18} className="card-title-icon" style={{ color: 'var(--accent-cyan)' }} />
-            <span>AI 15-Minute Queue Congestion Forecast (Predictive Neural Model)</span>
+      {/* AI Recommendation Banner */}
+      {congestedCounters.length > 0 && closedCounters.length > 0 && (
+        <div className="ai-banner">
+          <div className="ai-banner-icon">
+            <Zap size={20} />
           </div>
-          <span style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>
-            CONFIDENCE: 94.6%
-          </span>
+          <div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 800 }}>
+              ⚡ AI Recommendation: High Wait Time Detected at {congestedCounters[0].name}
+            </div>
+            <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.8)', marginTop: '2px' }}>
+              Queue length reached {congestedCounters[0].queueLength} shoppers. Open{' '}
+              <strong>{closedCounters[0].name}</strong> to reduce average wait time by ~4.2 mins.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Counter Grid */}
+      <div className="counter-grid">
+        {counters.map((cntr) => (
+          <div key={cntr.id} className="counter-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700, fontSize: '1rem', color: '#fff' }}>{cntr.name}</span>
+              <span className={`counter-status ${cntr.status}`}>{cntr.status}</span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0' }}>
+              <span style={{ fontSize: '2rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)' }}>
+                {cntr.queueLength}
+              </span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>shoppers in queue</span>
+            </div>
+
+            {/* Queue Avatars Representation */}
+            <div className="queue-avatars">
+              {Array.from({ length: Math.min(6, cntr.queueLength) }).map((_, i) => (
+                <div key={i} className="queue-avatar-dot">
+                  👤
+                </div>
+              ))}
+              {cntr.queueLength > 6 && (
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '4px' }}>
+                  +{cntr.queueLength - 6} more
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--border-color)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Staff: {cntr.activeStaff}</span>
+              <span style={{ color: 'var(--accent-amber)', fontWeight: 700 }}>~{cntr.avgWaitTime} mins wait</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Wait Time Trend & 15-Minute Congestion Forecast Chart */}
+      <div className="glass-card glow-cyan">
+        <div className="card-title-row">
+          <div className="card-title">
+            <TrendingUp color="var(--accent-cyan)" size={20} />
+            <span>Live Wait-Time Trend & 15-Min Congestion Forecast</span>
+          </div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            <span style={{ color: '#00F2FE' }}>━ Actual Wait Time</span> |{' '}
+            <span style={{ color: '#F43F5E' }}>--- 15m AI Forecast (Dashed)</span>
+          </div>
         </div>
 
-        <div style={{ width: '100%', height: 240 }}>
+        <div style={{ width: '100%', height: 320 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={forecastData}>
+            <LineChart data={waitTimeTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="time" stroke="#64748B" fontSize={11} />
-              <YAxis stroke="#64748B" fontSize={11} />
+              <XAxis dataKey="time" stroke="#64748B" style={{ fontSize: '0.78rem' }} />
+              <YAxis stroke="#64748B" style={{ fontSize: '0.78rem' }} unit="m" />
               <Tooltip
-                contentStyle={{ background: '#0F172A', borderColor: 'rgba(0, 242, 254, 0.4)', borderRadius: '10px' }}
+                contentStyle={{
+                  backgroundColor: '#0F172A',
+                  borderColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: '8px',
+                  color: '#FFF'
+                }}
               />
-              <Line type="monotone" dataKey="actual" stroke="#00F2FE" strokeWidth={2.5} name="Current Length" />
-              <Line type="monotone" dataKey="predicted" stroke="#8B5CF6" strokeWidth={2} strokeDasharray="5 5" name="AI Forecast" />
+              <Line type="monotone" dataKey="actual" name="Actual Wait (mins)" stroke="#00F2FE" strokeWidth={3} dot={{ r: 5 }} />
+              <Line type="monotone" dataKey="forecast" name="Forecast Wait (mins)" stroke="#F43F5E" strokeWidth={3} strokeDasharray="6 6" dot={{ r: 5 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default QueueMonitor;

@@ -1,180 +1,139 @@
 import React from 'react';
-import { Users, Clock, Flame, TrendingUp, ArrowUpRight, MapPin } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import { Users, LogIn, LogOut, Clock, Activity } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid
+} from 'recharts';
+import { useLiveData } from '../context/useLiveData';
+import KpiCard from './KpiCard';
+import Heatmap from './Heatmap';
 
-export default function ShopperAnalytics({ footfallData, dwellTimeData, zoneHeatmap }) {
-  const COLORS = ['#00F2FE', '#8B5CF6', '#10B981', '#F59E0B', '#F43F5E'];
+export const ShopperAnalytics = () => {
+  const { kpiMetrics, hourlyFootfallData, zoneDwellData } = useLiveData();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Metric Cards Row */}
-      <div className="metrics-grid">
-        <div className="metric-card">
-          <div className="metric-header">
-            <span>TOTAL FOOTFALL (TODAY)</span>
-            <Users size={16} color="var(--accent-cyan)" />
-          </div>
-          <div className="metric-value">1,482</div>
-          <div className="metric-trend trend-up">
-            <ArrowUpRight size={14} />
-            <span>+14.2% vs yesterday</span>
-          </div>
-        </div>
-
-        <div className="metric-card emerald">
-          <div className="metric-header">
-            <span>CURRENT OCCUPANCY</span>
-            <Users size={16} color="var(--accent-emerald)" />
-          </div>
-          <div className="metric-value">34</div>
-          <div className="metric-trend trend-up">
-            <span>Optimal store capacity (65% max)</span>
-          </div>
-        </div>
-
-        <div className="metric-card purple">
-          <div className="metric-header">
-            <span>AVG. SHOPPER DWELL TIME</span>
-            <Clock size={16} color="var(--accent-purple)" />
-          </div>
-          <div className="metric-value">18.4 <span style={{ fontSize: '1rem' }}>mins</span></div>
-          <div className="metric-trend trend-up">
-            <ArrowUpRight size={14} />
-            <span>+2.1 mins high engagement</span>
-          </div>
-        </div>
-
-        <div className="metric-card amber">
-          <div className="metric-header">
-            <span>HOTSPOT ZONE</span>
-            <Flame size={16} color="var(--accent-amber)" />
-          </div>
-          <div className="metric-value" style={{ fontSize: '1.4rem', marginTop: '4px' }}>Dairy & Beverage</div>
-          <div className="metric-trend">
-            <span>34% total store dwell time</span>
-          </div>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Top Metrics Row */}
+      <div className="kpi-grid">
+        <KpiCard
+          title="Active In-Store Shoppers"
+          value={kpiMetrics.activeShoppers}
+          unit="people"
+          trend={kpiMetrics.footfallTrend}
+          icon={Users}
+          theme="cyan"
+          subtitle="Real-time occupancy tracking"
+        />
+        <KpiCard
+          title="Total Today Footfall"
+          value={kpiMetrics.totalFootfallToday}
+          unit="shoppers"
+          trend={8.5}
+          icon={LogIn}
+          theme="purple"
+          subtitle="Entry door camera count"
+        />
+        <KpiCard
+          title="Average Dwell Time"
+          value={kpiMetrics.avgDwellTimeMins}
+          unit="mins"
+          trend={kpiMetrics.dwellTrend}
+          icon={Clock}
+          theme="amber"
+          subtitle="Time spent per customer"
+        />
+        <KpiCard
+          title="Total Store Exits"
+          value={Math.round(kpiMetrics.totalFootfallToday * 0.92)}
+          unit="exits"
+          trend={6.1}
+          icon={LogOut}
+          theme="emerald"
+          subtitle="Exit door camera count"
+        />
       </div>
 
-      {/* Hourly Footfall Chart & Dwell Time by Zone */}
-      <div className="grid-2">
-        {/* Footfall Area Chart */}
-        <div className="glass-card">
-          <div className="card-title">
-            <div className="card-title-left">
-              <TrendingUp size={18} className="card-title-icon" />
-              <span>Hourly Shopper Traffic & Footfall Trend</span>
+      {/* Analytics Charts Grid */}
+      <div className="dashboard-grid">
+        {/* Footfall Trend Area Chart */}
+        <div className="glass-card glow-cyan">
+          <div className="card-title-row">
+            <div className="card-title">
+              <Activity color="var(--accent-cyan)" size={20} />
+              <span>Hourly Footfall Traffic (Today vs Yesterday)</span>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Updated Live</span>
           </div>
-
-          <div style={{ width: '100%', height: 260 }}>
+          <div style={{ width: '100%', height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={footfallData}>
+              <AreaChart data={hourlyFootfallData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="footfallGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#00F2FE" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#00F2FE" stopOpacity={0.0}/>
+                  <linearGradient id="todayColor" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#00F2FE" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#00F2FE" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="yesterdayColor" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="time" stroke="#64748B" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748B" fontSize={11} tickLine={false} />
+                <XAxis dataKey="time" stroke="#64748B" style={{ fontSize: '0.78rem' }} />
+                <YAxis stroke="#64748B" style={{ fontSize: '0.78rem' }} />
                 <Tooltip
-                  contentStyle={{ background: '#0F172A', borderColor: 'rgba(0, 242, 254, 0.4)', borderRadius: '10px' }}
-                  itemStyle={{ color: '#00F2FE' }}
+                  contentStyle={{
+                    backgroundColor: '#0F172A',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    color: '#FFF'
+                  }}
                 />
-                <Area type="monotone" dataKey="count" stroke="#00F2FE" strokeWidth={2.5} fillOpacity={1} fill="url(#footfallGrad)" />
+                <Area type="monotone" dataKey="today" name="Today" stroke="#00F2FE" strokeWidth={2.5} fillOpacity={1} fill="url(#todayColor)" />
+                <Area type="monotone" dataKey="yesterday" name="Yesterday" stroke="#8B5CF6" strokeWidth={2} strokeDasharray="4 4" fillOpacity={1} fill="url(#yesterdayColor)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Dwell Time per Zone Bar Chart */}
-        <div className="glass-card">
-          <div className="card-title">
-            <div className="card-title-left">
-              <MapPin size={18} className="card-title-icon" style={{ color: 'var(--accent-purple)' }} />
-              <span>Average Dwell Time by Zone (Mins)</span>
+        {/* Zone Dwell Time Bar Chart */}
+        <div className="glass-card glow-purple">
+          <div className="card-title-row">
+            <div className="card-title">
+              <Clock color="var(--accent-purple)" size={20} />
+              <span>Zone-wise Dwell Time (Minutes)</span>
             </div>
           </div>
-
-          <div style={{ width: '100%', height: 260 }}>
+          <div style={{ width: '100%', height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dwellTimeData} layout="vertical">
+              <BarChart data={zoneDwellData} layout="vertical" margin={{ top: 10, right: 30, left: 20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis type="number" stroke="#64748B" fontSize={11} />
-                <YAxis dataKey="zone" type="category" stroke="#94A3B8" fontSize={11} width={100} />
+                <XAxis type="number" stroke="#64748B" style={{ fontSize: '0.78rem' }} />
+                <YAxis dataKey="zone" type="category" stroke="#64748B" style={{ fontSize: '0.78rem' }} width={90} />
                 <Tooltip
-                  contentStyle={{ background: '#0F172A', borderColor: 'rgba(139, 92, 246, 0.4)', borderRadius: '10px' }}
-                  itemStyle={{ color: '#8B5CF6' }}
+                  contentStyle={{
+                    backgroundColor: '#0F172A',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    color: '#FFF'
+                  }}
                 />
-                <Bar dataKey="minutes" radius={[0, 6, 6, 0]}>
-                  {dwellTimeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
+                <Bar dataKey="dwellMins" name="Avg Mins" radius={[0, 6, 6, 0]} fill="#8B5CF6" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Store Floorplan Traffic Heatmap Grid */}
-      <div className="glass-card">
-        <div className="card-title">
-          <div className="card-title-left">
-            <Flame size={18} className="card-title-icon" style={{ color: 'var(--accent-rose)' }} />
-            <span>Store Floor Traffic Heatmap Matrix (Live CCTV Intensity)</span>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem', alignItems: 'center' }}>
-            <span style={{ color: 'var(--text-muted)' }}>Low Traffic</span>
-            <div style={{ width: '80px', height: '8px', borderRadius: '4px', background: 'linear-gradient(to right, #10B981, #F59E0B, #F43F5E)' }}></div>
-            <span style={{ color: 'var(--accent-rose)', fontWeight: 600 }}>High Traffic</span>
-          </div>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
-          gap: '10px',
-          marginTop: '10px'
-        }}>
-          {zoneHeatmap.map((zone, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: zone.intensity > 75 
-                  ? 'rgba(244, 63, 94, 0.15)' 
-                  : zone.intensity > 40 
-                  ? 'rgba(245, 158, 11, 0.15)' 
-                  : 'rgba(16, 185, 129, 0.15)',
-                border: `1px solid ${
-                  zone.intensity > 75 
-                    ? 'var(--accent-rose)' 
-                    : zone.intensity > 40 
-                    ? 'var(--accent-amber)' 
-                    : 'var(--accent-emerald)'
-                }`,
-                borderRadius: '12px',
-                padding: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#FFF' }}>{zone.name}</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, fontFamily: 'var(--font-mono)', color: zone.intensity > 75 ? 'var(--accent-rose)' : '#FFF' }}>
-                {zone.intensity}%
-              </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
-                Avg {zone.shoppers} active shoppers
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Interactive Floor Heatmap Grid */}
+      <Heatmap />
     </div>
   );
-}
+};
+
+export default ShopperAnalytics;
